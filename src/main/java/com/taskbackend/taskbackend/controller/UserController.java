@@ -3,6 +3,8 @@ package com.taskbackend.taskbackend.controller;
 import com.taskbackend.taskbackend.model.User;
 import com.taskbackend.taskbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,18 +17,32 @@ public class UserController {
     // User Registration
     @PostMapping("/register")
     public User registerUser(@RequestBody User user) {
-        // Parola doğrulamasını kontrol et
-        if (!user.getPassword().equals(user.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password Not Matching");
-        }
+        validatePassword(user);
+        System.out.println("Registering User: " + user.getUsername());
         return userService.registerUser(user);
     }
 
-    // User Login
-    @PostMapping("/login")
-    public User loginUser(@RequestBody User user) {
-        return userService.loginUser(user.getUsername(), user.getPassword());
+    private void validatePassword(User user) {
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password Not Matching");
+        }
     }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<User> loginUser(@RequestBody User user) {
+        User loggedInUser = userService.loginUser(user.getUsername(), user.getPassword());
+        if (loggedInUser != null) {
+            // Login Success
+            System.out.println("Login Success: " + loggedInUser.getUsername());
+            return ResponseEntity.ok(loggedInUser);
+        } else {
+            // Login Failed
+            System.out.println("Login failed: " + user.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
 
     // Get User Information
     @GetMapping("/{userId}")
