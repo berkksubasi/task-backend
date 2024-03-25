@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     // User Registration
     @PostMapping("/register")
@@ -28,7 +32,7 @@ public class UserController {
         }
     }
 
-
+    // User Login
     @PostMapping("/login")
     public ResponseEntity<User> loginUser(@RequestBody User user) {
         User loggedInUser = userService.loginUser(user.getUsername(), user.getPassword());
@@ -42,7 +46,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
-
 
     // Get User Information
     @GetMapping("/{userId}")
